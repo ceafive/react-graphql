@@ -1,0 +1,16 @@
+{
+  "name": "react-graphql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start:server": "cd server && npm i && npm start",
+    "start:client": "cd client && npm i && npm start",
+    "start": "concurrently \"npm run start:server\" \"npm run start:client\""
+  },
+  "author": "Castro Agbo",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^5.3.0"
+  }
+}
