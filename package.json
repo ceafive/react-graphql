@@ -1,8 +1,9 @@
 {
   "name": "react-graphql",
   "version": "1.0.0",
-  "description": "",
+  "description": "a react app implementing Apollo client and express-graphql on the server side",
   "main": "index.js",
+  "repository": "https://github.com/ceafive/react-graphql",
   "scripts": {
     "start:server": "cd server && npm i && npm start",
     "start:client": "cd client && npm i && npm start",
