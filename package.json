@@ -17,7 +17,7 @@
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
     "start": "cd server && node app.js",
     "build": "cd client && npm run build",
-    "heroku-postbuild": "npm run server && npm run build"
+    "heroku-postbuild": "npm run build && npm run server"
   },
   "author": "Castro Agbo <ceafive@gmail.com>",
   "license": "MIT",
