@@ -106,36 +106,42 @@ const Login = () => {
             >
               {resetPassword ? `Enter New Password` : `Password`}
             </label>
-            <input
-              className={`shadow appearance-none border ${
+            <div
+              className={`flex items-center border ${
                 !formData.password && "border-red-500"
-              } rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
-              id="password"
-              name="password"
-              value={formData.password}
-              type={secureEntry ? "password" : "text"}
-              placeholder="*********"
-              onChange={(e) => {
-                e.persist();
-                setFormData((data) => ({
-                  ...data,
-                  [e.target.name]: e.target.value,
-                }));
-              }}
-            />
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                setSecureEntry((data) => !data);
-              }}
+              } rounded shadow pr-3 `}
             >
-              <p
-                className={`inset-0 flex justify-end items-center w-full text-right text-xs ${"text-blue-500"} focus:outline-none`}
+              <input
+                className={`appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+                id="password"
+                name="password"
+                value={formData.password}
+                type={secureEntry ? "password" : "text"}
+                placeholder="*********"
+                onChange={(e) => {
+                  e.persist();
+                  setFormData((data) => ({
+                    ...data,
+                    [e.target.name]: e.target.value,
+                  }));
+                }}
+              />
+              <button
+                className="focus:outline-none"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSecureEntry((data) => !data);
+                }}
               >
-                {secureEntry ? "Show" : "Hide"}
-              </p>
-            </button>
-
+                <p
+                  className={`text-right text-xs ${
+                    secureEntry ? "text-red-500" : "text-blue-500"
+                  }`}
+                >
+                  {secureEntry ? "Show" : "Hide"}
+                </p>
+              </button>
+            </div>
             {!formData.password && (
               <p className="text-red-500 text-xs italic">
                 Please choose a password
