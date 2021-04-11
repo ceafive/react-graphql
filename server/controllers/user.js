@@ -19,8 +19,10 @@ const loginUser = async (username, password) => {
     if (!valid) {
       throw new Error('Incorrect password')
     }
+
     // return json web token
     const token = signToken(currentUser._id, currentUser.username)
+    console.log({ id: typeof currentUser._id, token })
     return { id: currentUser._id, token }
   } catch (error) {
     console.log(error)

@@ -1,7 +1,6 @@
 import React from "react";
 import { loginUser, forgotPassword } from "../queries/queries";
-import { useMutation } from "@apollo/client";
-import { isLoggedInVar } from "../utils/apollo-cache";
+import useCustomMutation from "../hooks/useCustomMutation";
 
 const initialState = {
   username: "",
@@ -16,30 +15,19 @@ const Login = () => {
   });
   const [resetPassword, setResetPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-
-  const loginOrResetPassword = (mutation) => {
-    const [userMutation, { loading }] = useMutation(mutation, {
-      onError(gqlerror) {
-        setError({
-          status: true,
-          error: gqlerror.message,
-        });
-        setLoading(false);
-      },
-      onCompleted({ [mutation]: { id, token } }) {
-        if (token) {
-          localStorage.setItem(
-            "graphql-react",
-            JSON.stringify({ userId: id, token })
-          );
-          isLoggedInVar(true);
-          setLoading(false);
-        }
-      },
-    });
-
-    return { userMutation, loading };
-  };
+  const { userMutation: loginUserIn } = useCustomMutation(
+    `loginUser`,
+    loginUser,
+    setLoading,
+    setError
+  );
+  const { userMutation: resetUserPassword } = useCustomMutation(
+    `resetPassword`,
+    forgotPassword,
+    setLoading,
+    setError
+  );
+  const [secureEntry, setSecureEntry] = React.useState(true);
 
   const disabledButton = () => {
     let disabled = false;
@@ -65,39 +53,20 @@ const Login = () => {
       });
   };
 
-  const forgotPassword = (e) => {
-    e.preventDefault();
-    const { username, password } = formData;
-    validateFields(username, password);
-    console.log("forgot password");
-  };
-
-  const login = (e) => {
+  const loginOrResetPassword = (e) => {
+    const fn = resetPassword ? resetUserPassword : loginUserIn;
     try {
       e.preventDefault();
       const { username, password } = formData;
       validateFields(username, password);
 
-      const { userMutation: loginUserIn, loading } = loginOrResetPassword(
-        loginUser
-      );
-
-      setLoading(loading);
-
-      loginUserIn({
+      fn({
         variables: {
           username,
           password,
         },
       });
-
-      // getUser({
-      //   variables: {
-      //     username,
-      //     password,
-      //   },
-      // });
-      //   setFormData(initialState);
+      // setFormData(initialState);
     } catch (error) {
       console.log(error);
     }
@@ -130,7 +99,7 @@ const Login = () => {
               }}
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
               htmlFor="password"
@@ -144,7 +113,7 @@ const Login = () => {
               id="password"
               name="password"
               value={formData.password}
-              type="password"
+              type={secureEntry ? "password" : "text"}
               placeholder="*********"
               onChange={(e) => {
                 e.persist();
@@ -154,13 +123,18 @@ const Login = () => {
                 }));
               }}
             />
-            {/* <button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                setSecureEntry((data) => !data);
+              }}
+            >
               <p
-                className={`inset-0 flex jusify-end items-center w-full text-right text-xs ${"text-blue-500"}`}
+                className={`inset-0 flex justify-end items-center w-full text-right text-xs ${"text-blue-500"} focus:outline-none`}
               >
-                {"Show"}
+                {secureEntry ? "Show" : "Hide"}
               </p>
-            </button> */}
+            </button>
 
             {!formData.password && (
               <p className="text-red-500 text-xs italic">
@@ -182,7 +156,7 @@ const Login = () => {
                   : "bg-blue-600 hover:bg-blue-700"
               }  text-white font-thin w-full py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
               type="button"
-              onClick={resetPassword ? forgotPassword : login}
+              onClick={loginOrResetPassword}
             >
               {loading && !resetPassword
                 ? "Signing in.."
@@ -197,6 +171,10 @@ const Login = () => {
                 resetPassword
                   ? setResetPassword(false)
                   : setResetPassword(true);
+                return setError({
+                  status: false,
+                  error: "",
+                });
               }}
             >
               {resetPassword ? "Login" : "Forgot Password"}
