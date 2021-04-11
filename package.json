@@ -12,12 +12,12 @@
     "url": "git+https://github.com/ceafive/react-graphql"
   },
   "scripts": {
-    "server": "cd server && npm install --only=dev --no-shrinkwrap",
-    "client": "cd client && npm install",
+    "server": "cd server && npm install --only=dev --no-shrinkwrap && npm start",
+    "client": "cd client && npm install && npm start",
     "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
     "start": "cd server && node app.js",
     "build": "cd client && npm run build",
-    "heroku-postbuild": "concurrently --kill-others-on-fail \"npm run build\" \"npm run server\""
+    "heroku-postbuild": "npm run server && npm run client && npm run build"
   },
   "author": "Castro Agbo <ceafive@gmail.com>",
   "license": "MIT",

@@ -1,9 +1,50 @@
 const graphql = require('graphql')
+const {
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLSchema,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLError,
+  GraphQLUnionType,
+} = graphql
 
 const Book = require('../models/book')
 const Author = require('../models/author')
 
-const { GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLSchema, GraphQLID, GraphQLInt, GraphQLList } = graphql
+const { loginUser, resetPassword, findUserByID } = require('../controllers/user')
+
+const TokenType = new GraphQLObjectType({
+  name: 'Token',
+  fields: () => ({
+    id: { type: GraphQLID },
+    token: { type: GraphQLString },
+  }),
+})
+
+const UserNotFoundErrorType = new GraphQLObjectType({
+  name: 'UserNotFoundError',
+  fields: () => ({
+    errorCode: { type: GraphQLString },
+    message: { type: GraphQLString },
+  }),
+})
+
+const UserType = new GraphQLObjectType({
+  name: 'User',
+  fields: () => ({
+    id: { type: GraphQLID },
+    username: { type: GraphQLString },
+  }),
+})
+
+const ActionResultType = (...params) =>
+  new GraphQLUnionType({
+    name: 'ActionResultType',
+    types: () => [...params, UserNotFoundErrorType],
+  })
 
 const BookType = new GraphQLObjectType({
   name: 'Book',
@@ -56,6 +97,26 @@ const AuthorType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: 'RootQueryType',
   fields: {
+    user: {
+      type: ActionResultType(UserType),
+      resolve(parent, args, { user }) {
+        try {
+          // make sure user is logged in
+          if (!user) {
+            return {
+              __typename: 'UserNotFoundError',
+              errorCode: 'Authentication Error',
+              message: `User is not authenticated!`,
+            }
+          }
+          // user is authenticated
+          return findUserByID(user.id)
+        } catch (error) {
+          console.error(error)
+          return error
+        }
+      },
+    },
     book: {
       type: BookType,
       args: { id: { type: GraphQLID } },
@@ -73,6 +134,18 @@ const RootQuery = new GraphQLObjectType({
         }
       },
     },
+    books: {
+      type: new GraphQLList(BookType),
+      args: { userId: { type: GraphQLString } },
+      resolve(parent, { userId }) {
+        try {
+          const books = Book.find({ addedBy: userId }).exec()
+          return books || []
+        } catch (error) {
+          console.log(error)
+        }
+      },
+    },
     author: {
       type: AuthorType,
       args: { id: { type: GraphQLID } },
@@ -86,17 +159,6 @@ const RootQuery = new GraphQLObjectType({
             statusCode: 400,
             message: 'Not found',
           }
-        }
-      },
-    },
-    books: {
-      type: new GraphQLList(BookType),
-      resolve() {
-        try {
-          const books = Book.find({}).exec()
-          return books
-        } catch (error) {
-          console.log(error)
         }
       },
     },
@@ -138,14 +200,40 @@ const Mutation = new GraphQLObjectType({
         name: { type: new GraphQLNonNull(GraphQLString) },
         genre: { type: new GraphQLNonNull(GraphQLString) },
         authorid: { type: new GraphQLNonNull(GraphQLID) },
+        userId: { type: new GraphQLNonNull(GraphQLID) },
       },
-      resolve(parent, args) {
+      async resolve(parent, args) {
         let book = new Book({
           name: args.name,
           genre: args.genre,
           authorid: args.authorid,
+          addedBy: args.userId,
         })
+
+        const { user } = await findUserByID(args.userId)
+        user.booksAdded = [...(user.booksAdded || []), book._id]
+        await user.save()
         return book.save()
+      },
+    },
+    loginUser: {
+      type: TokenType,
+      args: {
+        username: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, { username, password }) {
+        return loginUser(username, password)
+      },
+    },
+    resetPassword: {
+      type: TokenType,
+      args: {
+        username: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, { username, password }) {
+        return resetPassword(username, password)
       },
     },
   },

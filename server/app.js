@@ -1,10 +1,12 @@
 const path = require('path')
 const express = require('express')
 const cors = require('cors')
-const { graphqlHTTP } = require('express-graphql')
+const morgan = require('morgan')
+const dotenv = require('dotenv').config()
 
-const schema = require('./schema/schema')
 const { startDB } = require('./utils/db')
+const { authenticate } = require('./utils/jwt')
+const graphqlServer = require('./controllers/graphql')
 
 const app = express()
 
@@ -12,7 +14,16 @@ const app = express()
 startDB()
 
 app.use(cors())
-app.use('/graphql', graphqlHTTP({ schema, graphiql: true }))
+morgan.token('authorization', (req, res) => req.headers['authorization'])
+morgan.token('queryparam', (req, res) => {
+  const { query } = req
+  return query.userId
+})
+
+app.use(morgan('tiny'))
+app.use(morgan(':method :queryparam'))
+
+app.use('/graphql', express.json(), authenticate, graphqlServer)
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'client/build')))
@@ -22,6 +33,8 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-app.listen(4000, () => {
-  console.log('Listening on port 4000')
+const PORT = process.env.PORT || 4000
+
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`)
 })
