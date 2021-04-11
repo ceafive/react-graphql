@@ -5,7 +5,7 @@ const morgan = require('morgan')
 const dotenv = require('dotenv').config()
 
 const { startDB } = require('./utils/db')
-const { authenticate } = require('./utils/jwt')
+const { authenticate } = require('./middlewares')
 const graphqlServer = require('./controllers/graphql')
 
 const app = express()
@@ -25,8 +25,6 @@ app.use(morgan('tiny'))
 app.use(morgan(':method :queryparam'))
 
 app.use('/graphql', express.json(), authenticate, graphqlServer)
-
-// console.log(path.join(__dirname, '../client'))
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '../client/build')))
