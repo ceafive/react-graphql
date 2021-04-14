@@ -22,9 +22,10 @@ morgan.token('queryparam', (req, res) => {
 app.disable('x-powered-by')
 
 app.use(morgan('tiny'))
-app.use(morgan(':method :queryparam'))
+// app.use(morgan(':method :queryparam'))
 
-app.use('/graphql', express.json(), authenticate, graphqlServer)
+// app.use('/graphql', graphqlServer)
+app.use('/graphql', authenticate, graphqlServer)
 
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.resolve(__dirname, '../client/build')))
@@ -35,7 +36,4 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 const PORT = process.env.PORT || 4000
-
-app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`)
-})
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`))

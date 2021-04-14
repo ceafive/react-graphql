@@ -1,9 +1,10 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, useLazyQuery } from "@apollo/client";
 import {
   getAuthorsQuery,
   addBookMutation,
   getBooksQuery,
+  getUserDetails,
 } from "../queries/queries";
 import LogoutButton from "./LogoutButton";
 
@@ -24,8 +25,13 @@ const AddBook = () => {
   const client = useApolloClient();
 
   const [formData, setFormData] = React.useState(initialState);
-  const { loading, data } = useQuery(getAuthorsQuery);
+  const { loading, data: authors } = useQuery(getAuthorsQuery);
   const [addBook] = useMutation(addBookMutation);
+  const [getUser, { called, data: allUserDetails }] = useLazyQuery(
+    getUserDetails
+  );
+
+  console.log({ allUserDetails });
 
   const disabledButton = () => {
     let disabled = false;
@@ -42,7 +48,7 @@ const AddBook = () => {
     if (loading) {
       return <option disabled>Loading authors</option>;
     } else {
-      return data.authors.map((author) => {
+      return authors.authors.map((author) => {
         return (
           <option key={author.id} value={author.id}>
             {author.name}
@@ -116,6 +122,15 @@ const AddBook = () => {
             onClick={submitForm}
           >
             +
+          </button>
+          <button
+            className={`flex justify-center items-center px-4 py-2 font-thin text-white focus:outline-none bg-blue-500 hover:bg-blue-700`}
+            onClick={(e) => {
+              e.preventDefault();
+              getUser();
+            }}
+          >
+            Get Books added by me
           </button>
           <LogoutButton
             onClick={(e) => {

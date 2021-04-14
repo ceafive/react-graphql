@@ -79,6 +79,20 @@ const getUserDetails = gql`
       ... on User {
         id
         username
+        booksAdded {
+          id
+          name
+          genre
+          author {
+            id
+            name
+            age
+            books {
+              id
+              name
+            }
+          }
+        }
       }
     }
   }

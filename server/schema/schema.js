@@ -32,11 +32,21 @@ const UserNotFoundErrorType = new GraphQLObjectType({
   }),
 })
 
+const BooksAddedTYpe = new GraphQLObjectType({
+  name: 'BooksAdded',
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    genre: { type: GraphQLString },
+  }),
+})
+
 const UserType = new GraphQLObjectType({
   name: 'User',
   fields: () => ({
     id: { type: GraphQLID },
     username: { type: GraphQLString },
+    booksAdded: { type: new GraphQLList(BookType) },
   }),
 })
 
@@ -223,6 +233,7 @@ const Mutation = new GraphQLObjectType({
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, { username, password }) {
+        console.log({ username, password })
         return loginUser(username, password)
       },
     },

@@ -53,7 +53,11 @@ const resetPassword = async (username, password) => {
 
 const findUserByID = async (id) => {
   const result = await User.findById(id)
-  return { __typename: 'User', user: result, id: result._id, username: result.username }
+
+  await result.populate('booksAdded').execPopulate()
+  result.populated('booksAdded')
+
+  return { __typename: 'User', user: result, id: result._id, username: result.username, booksAdded: result.booksAdded }
 }
 
 module.exports = {

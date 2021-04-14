@@ -12,23 +12,16 @@ import { isUserLoggedIn } from "./queries/queries";
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const { loading, data } = useQuery(isUserLoggedIn);
-  // const [isLoggedIn, setIsLoggedIn] = React.useState(true);
-  // const { loading, error, data } = useQuery(getUserDetails, {
-  //   // pollInterval: !isLoggedIn ? 2000 : 0,
-  // });
 
   React.useEffect(() => {
     if (data) {
-      // const {
-      //   user: { errorCode, username },
-      // } = data;
       const { isLoggedIn } = data;
 
       if (!isLoggedIn) {
-        setIsLoggedIn(false);
+        setIsLoggedIn(isLoggedIn);
       }
       if (isLoggedIn) {
-        setIsLoggedIn(true);
+        setIsLoggedIn(isLoggedIn);
       }
     }
   }, [data]);

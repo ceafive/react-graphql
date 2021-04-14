@@ -4,6 +4,7 @@ import { getBooksQuery } from "../queries/queries";
 
 // components
 import BookDetails from "./BookDetails";
+import Spinner from "./Spinner";
 
 const BookList = () => {
   const [selected, setSelected] = React.useState(null);
@@ -14,11 +15,14 @@ const BookList = () => {
 
   const { loading, data } = useQuery(getBooksQuery, {
     variables: { userId },
+    onError(error) {
+      console.log(error);
+    },
   });
 
   const displayBooks = () => {
-    if (loading) {
-      return <div>Loading books...</div>;
+    if (loading || !data) {
+      return <Spinner text="Loading..." />;
     } else {
       return data.books.map((book) => {
         return (
